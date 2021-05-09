@@ -1,0 +1,21 @@
+.layout {
+    background: #fdfdfd;
+
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    height: 100%;
+
+    margin-top: 120px;
+}
+
+
+.signin {
+    background-color: #fff;
+    border: 1px solid rgba(0,0,0,.06);
+    border-radius: 2px;
+    padding: 40px 50px 32px;
+
+
+    width: 600px;
+}
