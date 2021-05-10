@@ -41,11 +41,11 @@ export function getListById({ id }) {
 }
 
 export function getListsByUserEmail({ email }) {
-    const lists = [];
+    const lists = {};
 
     listStorage.forEach((list) => {
         if (list.staticState.owner === email || list.state.collaborators.includes(email)) {
-            lists.push(list);
+            lists[list.staticState.id] = ({  ...list, state: save(list.state).toString() });
         }
     });
 

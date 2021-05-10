@@ -16,8 +16,14 @@ const {
     getHistory,
 } = require('automerge');
 
-function jsonStringToUint8Array(json) {
-    const object = JSON.parse(json);
+const startedListState = init();
+
+function jsonToUint8Array(json) {
+    let object = json;
+    if (typeof json === 'string') {
+        object = JSON.parse(json);
+    }
+
     const values = Object.values(object);
     const ret = new Uint8Array(values.length);
 
@@ -27,77 +33,32 @@ function jsonStringToUint8Array(json) {
     return ret;
 }
 
-function createTaskDoc() {
-    return from({
-        text: new Text(),
-        done: false,
-    });
-}
+let listStateClient1 = load(
+    jsonToUint8Array(
+        '{"0":133,"1":111,"2":74,"3":131,"4":154,"5":233,"6":54,"7":219,"8":0,"9":162,"10":1,"11":1,"12":16,"13":151,"14":19,"15":125,"16":27,"17":66,"18":177,"19":75,"20":216,"21":184,"22":52,"23":11,"24":159,"25":78,"26":60,"27":46,"28":96,"29":1,"30":89,"31":112,"32":165,"33":235,"34":122,"35":110,"36":144,"37":83,"38":61,"39":217,"40":15,"41":66,"42":113,"43":184,"44":67,"45":106,"46":52,"47":213,"48":242,"49":60,"50":117,"51":172,"52":96,"53":216,"54":11,"55":133,"56":171,"57":93,"58":48,"59":88,"60":100,"61":66,"62":7,"63":1,"64":2,"65":3,"66":2,"67":19,"68":2,"69":35,"70":6,"71":53,"72":16,"73":64,"74":2,"75":86,"76":2,"77":8,"78":21,"79":21,"80":33,"81":2,"82":35,"83":3,"84":52,"85":1,"86":66,"87":3,"88":86,"89":4,"90":87,"91":10,"92":128,"93":1,"94":2,"95":127,"96":0,"97":127,"98":1,"99":127,"100":2,"101":127,"102":247,"103":203,"104":230,"105":132,"106":6,"107":127,"108":14,"109":73,"110":110,"111":105,"112":116,"113":105,"114":97,"115":108,"116":105,"117":122,"118":97,"119":116,"120":105,"121":111,"122":110,"123":127,"124":0,"125":127,"126":7,"127":126,"128":13,"129":99,"130":111,"131":108,"132":108,"133":97,"134":98,"135":111,"136":114,"137":97,"138":116,"139":111,"140":114,"141":115,"142":5,"143":116,"144":105,"145":116,"146":108,"147":101,"148":2,"149":0,"150":126,"151":2,"152":127,"153":2,"154":126,"155":2,"156":1,"157":126,"158":0,"159":166,"160":1,"161":83,"162":111,"163":109,"164":101,"165":32,"166":116,"167":105,"168":116,"169":108,"170":101,"171":2,"172":0}'
+    )
+);
 
-const startedListState = init();
+let listStateClient2 = load(
+    jsonToUint8Array(
+        '{"0":133,"1":111,"2":74,"3":131,"4":154,"5":233,"6":54,"7":219,"8":0,"9":162,"10":1,"11":1,"12":16,"13":151,"14":19,"15":125,"16":27,"17":66,"18":177,"19":75,"20":216,"21":184,"22":52,"23":11,"24":159,"25":78,"26":60,"27":46,"28":96,"29":1,"30":89,"31":112,"32":165,"33":235,"34":122,"35":110,"36":144,"37":83,"38":61,"39":217,"40":15,"41":66,"42":113,"43":184,"44":67,"45":106,"46":52,"47":213,"48":242,"49":60,"50":117,"51":172,"52":96,"53":216,"54":11,"55":133,"56":171,"57":93,"58":48,"59":88,"60":100,"61":66,"62":7,"63":1,"64":2,"65":3,"66":2,"67":19,"68":2,"69":35,"70":6,"71":53,"72":16,"73":64,"74":2,"75":86,"76":2,"77":8,"78":21,"79":21,"80":33,"81":2,"82":35,"83":3,"84":52,"85":1,"86":66,"87":3,"88":86,"89":4,"90":87,"91":10,"92":128,"93":1,"94":2,"95":127,"96":0,"97":127,"98":1,"99":127,"100":2,"101":127,"102":247,"103":203,"104":230,"105":132,"106":6,"107":127,"108":14,"109":73,"110":110,"111":105,"112":116,"113":105,"114":97,"115":108,"116":105,"117":122,"118":97,"119":116,"120":105,"121":111,"122":110,"123":127,"124":0,"125":127,"126":7,"127":126,"128":13,"129":99,"130":111,"131":108,"132":108,"133":97,"134":98,"135":111,"136":114,"137":97,"138":116,"139":111,"140":114,"141":115,"142":5,"143":116,"144":105,"145":116,"146":108,"147":101,"148":2,"149":0,"150":126,"151":2,"152":127,"153":2,"154":126,"155":2,"156":1,"157":126,"158":0,"159":166,"160":1,"161":83,"162":111,"163":109,"164":101,"165":32,"166":116,"167":105,"168":116,"169":108,"170":101,"171":2,"172":0}'
+    )
+);
 
-let listState = from({
-    title: 'Some title',
-    collaborators: [],
+console.log(listStateClient1, listStateClient2);
+
+let listStateClient1Ch = change(listStateClient1, (doc) => {
+    doc.collaborators.push('name');
 });
 
-const ch1 = getChanges(startedListState, listState);
+// -----
 
-console.log('\n', JSON.stringify(ch1));
+const ch1 = getChanges(listStateClient1, listStateClient1Ch);
 
-let newListStaet = change(listState, (doc) => {
-    doc.title = 'asd';
-    doc.collaborators.insertAt(0, 'name');
-});
+console.log('apply changes', applyChanges(listStateClient2, ch1));
 
-const ch = getChanges(listState, newListStaet);
-
-console.log('\n', JSON.stringify(ch));
-
-const withChanges = applyChanges(init(), ch);
-
-console.log(withChanges);
-
-// let s1 = createTaskDoc();
-//
-// s1 = change(s1, (doc) => {
-//     doc.text.insertAt(0, '1');
+// let listStateClient2Ch = change(listStateClient2, (doc) => {
+//     doc.collaborators.push('second');
 // });
 //
-// let transferDoc = save(s1);
-//
-// // ----
-// let client1 = init();
-// client1 = change(client1, (doc) => {
-//     doc.text = new Text();
-//     doc.text.insertAt(0, 'A');
-// });
-//
-// let client2 = merge(init(), client1);
-//
-// console.log(client1.text.toString(), client2.text.toString());
-//
-// let newClient1 = change(client1, (doc) => {
-//     doc.text.insertAt(1, 'B');
-// });
-//
-// const client1Changes = getChanges(client1, newClient1);
-//
-// let newClient2 = change(client2, (doc) => {
-//     doc.text.deleteAt(0, 1);
-//     doc.text.insertAt(0, 'C');
-// });
-//
-// const client2Changes = getChanges(client2, newClient2);
-//
-// const client1WithChanges = applyChanges(newClient1, client2Changes);
-//
-// // console.log(client1WithChanges[0].text.toString(), newClient2.text.toString());
-//
-// const client1AfterChanges = change(client1WithChanges[0], (doc) => {
-//     doc.text.insertAt(2, 'D');
-// });
-//
-// const client2WithChanges = applyChanges(newClient2, client1Changes);
-//
-// // console.log(client1WithChanges[0].text.toString(), client2WithChanges[0].text.toString());
+// const ch2 = getChanges(listStateClient2, listStateClient2Ch);
