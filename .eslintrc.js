@@ -5,7 +5,7 @@ module.exports = {
         'prettier/prettier': 'error',
     },
     env: {
-        es6: true,
+        es2021: true,
         node: true,
         browser: true,
     },
@@ -14,6 +14,6 @@ module.exports = {
         ecmaFeatures: {
             jsx: true,
         },
-        ecmaVersion: 8,
+        ecmaVersion: 2021,
     },
 };

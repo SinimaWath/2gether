@@ -1,7 +1,7 @@
 import { getSession } from 'next-auth/client';
-import { createList, getListById, updateListStateById } from '../../../src/features/list/storage';
 import { jsonArrayToUint8Array, jsonToUint8Array } from '../../../src/features/parsing';
-import { listChangesQueue } from '../../../src/features/list/queue';
+import { getById, updateStateById, create } from '../../../src/features/task/storage';
+import { taskChangesQueue } from '../../../src/features/task/queue';
 
 export default async function handler(req, res) {
     const session = await getSession({ req });
@@ -11,37 +11,37 @@ export default async function handler(req, res) {
         return;
     }
 
-    const { listId, changes } = req.body;
+    const { taskId, changes } = req.body;
 
-    console.log(getListById({ id: listId }));
+    console.log(getById({ id: taskId }));
 
-    // Если нет списка, то пушить некуда и просто создаем его
-    if (!getListById({ id: listId })) {
-        createList({
+    // Если нет задачи, то пушить некуда и просто создаем его
+    if (!getById({ id: taskId })) {
+        create({
             owner: session.user.email,
             changes: jsonArrayToUint8Array(changes),
-            id: listId,
+            id: taskId,
         });
         res.status(200).json({});
         return;
     }
 
     const task = {
-        id: listId,
+        id: taskId,
         changes,
         by: session.user.email,
     };
 
-    listChangesQueue.push(task);
+    taskChangesQueue.push(task);
 
     // to backup and first load
-    updateListStateById({
-        id: listId,
+    updateStateById({
+        id: taskId,
         changes: jsonArrayToUint8Array(changes),
         owner: session.user.email,
     });
 
-    const thereOtherChanges = listChangesQueue.checkNotUserChanges(task);
+    const thereOtherChanges = taskChangesQueue.checkNotUserChanges(task);
 
     res.status(200).json({ needPull: thereOtherChanges });
 }

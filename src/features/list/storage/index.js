@@ -9,7 +9,10 @@ const ListModel = {
         id: 'list:',
         owner: 'email',
     },
-    state: {},
+    state: {
+        collaborators: [],
+        title: '',
+    },
 };
 
 export const NotFound = new Error('List Not Found');
@@ -44,12 +47,18 @@ export function getListsByUserEmail({ email }) {
     const lists = {};
 
     listStorage.forEach((list) => {
-        if (list.staticState.owner === email || list.state.collaborators.includes(email)) {
-            lists[list.staticState.id] = ({  ...list, state: save(list.state).toString() });
+        if (isUserCanEditList({ id: list.staticState.id, email })) {
+            lists[list.staticState.id] = { ...list, state: save(list.state).toString() };
         }
     });
 
     return lists;
+}
+
+export function isUserCanEditList({ email, id }) {
+    const list = listStorage.get(id);
+
+    return list.state.owner || list.state.collaborators.includes(email);
 }
 
 export function updateListStateById({ id, changes, owner }) {
@@ -57,14 +66,15 @@ export function updateListStateById({ id, changes, owner }) {
         throw NotFound;
     }
 
+    if (!isUserCanEditList({ id, email: owner })) {
+        throw Forbidden;
+    }
+
     if (typeof changes === 'string') {
         throw InvalidChangesType;
     }
 
     const list = listStorage.get(id);
-    if (list.staticState.owner !== owner) {
-        throw Forbidden;
-    }
 
     const listState = list.state;
 

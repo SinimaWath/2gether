@@ -1,3 +1,3 @@
-import { MainAppPage } from '../src/features/app-page/main-page/Page';
+import { MainAppPage } from '../src/features/app/main-page/Page';
 
 export default MainAppPage;
