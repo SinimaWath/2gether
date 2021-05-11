@@ -48,7 +48,7 @@ export function getListsByUserEmail({ email }) {
 
     listStorage.forEach((list) => {
         if (isUserCanEditList({ id: list.staticState.id, email })) {
-            lists[list.staticState.id] = { ...list, state: save(list.state).toString() };
+            lists[list.staticState.id] = { ...list, state: JSON.stringify(save(list.state)) };
         }
     });
 
@@ -58,7 +58,8 @@ export function getListsByUserEmail({ email }) {
 export function isUserCanEditList({ email, id }) {
     const list = listStorage.get(id);
 
-    return list.state.owner || list.state.collaborators.includes(email);
+    console.log(list);
+    return list.staticState.owner === email || list.state.collaborators.includes(email);
 }
 
 export function updateListStateById({ id, changes, owner }) {

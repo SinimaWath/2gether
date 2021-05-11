@@ -1,4 +1,4 @@
-import { getProviders, getSession, signIn } from 'next-auth/client';
+import { signIn } from 'next-auth/client';
 
 import styles from './index.module.css';
 import { Button } from 'antd';
@@ -11,11 +11,7 @@ export function SignIn({ providers }) {
                 <h1>Sign In</h1>
                 {Object.values(providers).map((provider) => (
                     <div key={provider.name} className={provider.name}>
-                        <Button
-                            onClick={() => signIn(provider.id)}
-                            size={'large'}
-                            block
-                        >
+                        <Button onClick={() => signIn(provider.id)} size={'large'} block>
                             <GoogleOutlined />
                             With Google
                         </Button>

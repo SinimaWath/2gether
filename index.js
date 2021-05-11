@@ -34,7 +34,7 @@ function jsonToUint8Array(json) {
 }
 
 let listStateClient1 = from({
-    text: new Text('A'),
+    text: new Text('AB'),
 });
 
 let listStateClient2 = merge(init(), listStateClient1);

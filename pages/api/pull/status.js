@@ -3,6 +3,7 @@ import { getListsByUserEmail } from '../../../src/features/list/storage';
 
 export default async function handler(req, res) {
     const session = await getSession({ req });
+    console.log(session);
     if (!session) {
         res.status = 401;
         res.end();

@@ -1,0 +1,12 @@
+.logo {
+    height: 64px;
+    text-align: center;
+    color: white;
+    font-size: 40px;
+    font-weight: 900;
+    user-select: none;
+}
+
+.first {
+    color: rgb(233, 79, 50);
+}

@@ -16,7 +16,7 @@ export const CreateListButton = () => {
     };
 
     const handleOk = () => {
-        dispatch(createListModalOk({ title: titleValueRef.current, id: generateListId() }));
+        dispatch(createListModalOk({ title: title, id: generateListId() }));
         setTitle(undefined);
         setIsModalVisible(false);
     };
