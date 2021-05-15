@@ -20,6 +20,5 @@ export default async function handler(req, res) {
 
     const changes = pullChanges({ listId });
 
-    console.log(changes);
     res.status(200).json(changes);
 }

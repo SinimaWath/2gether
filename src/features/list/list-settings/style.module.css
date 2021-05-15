@@ -1,0 +1,27 @@
+.settingsButton {
+    height: 22px;
+    width: 22px;
+    cursor: pointer;
+}
+
+.settingsButton svg {
+    height: 100%;
+    width: 100%;
+}
+
+.button {
+    text-align: start;
+}
+
+.invited {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+
+    font-size: 16px;
+    margin-top: 12px;
+}
+
+.menuItem {
+    font-size: 16px;
+}

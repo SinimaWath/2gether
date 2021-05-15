@@ -6,8 +6,9 @@ import { generateListId } from '../id';
 import { PlusOutlined } from '@ant-design/icons';
 import style from './style.module.css';
 
-export const CreateListButton = () => {
+export const CreateListButton = ({ text = 'Create New List', type }) => {
     const dispatch = useDispatch();
+    const inputRef = useRef();
 
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [title, setTitle] = useState(undefined);
@@ -22,7 +23,9 @@ export const CreateListButton = () => {
             handleOk();
         };
 
-        document.addEventListener('keydown', onKeyDown);
+        if (isModalVisible) {
+            document.addEventListener('keydown', onKeyDown);
+        }
 
         return () => {
             document.removeEventListener('keydown', onKeyDown);
@@ -31,9 +34,19 @@ export const CreateListButton = () => {
 
     const showModal = () => {
         setIsModalVisible(true);
+
+        setTimeout(() => {
+            if (!inputRef.current) {
+                return;
+            }
+
+            console.log(inputRef.current);
+            inputRef.current.focus();
+        }, 100);
     };
 
     const handleOk = () => {
+        console.log('handleok');
         dispatch(createListModalOk({ title: title, id: generateListId() }));
         setTitle(undefined);
         setIsModalVisible(false);
@@ -54,10 +67,10 @@ export const CreateListButton = () => {
             <Button
                 onClick={showModal}
                 icon={<PlusOutlined />}
-                type={'text'}
-                className={style.text}
+                type={type === 'button' ? 'primary' : 'text'}
+                className={type === 'button' ? '' : style.text}
             >
-                New List
+                {text}
             </Button>
             <Modal
                 title={'Create New List'}
@@ -65,7 +78,13 @@ export const CreateListButton = () => {
                 onOk={handleOk}
                 onCancel={handleCancel}
             >
-                <Input placeholder={'Title'} onChange={handleTittleChange} value={title} />
+                <Input
+                    ref={inputRef}
+                    placeholder={'Title'}
+                    onChange={handleTittleChange}
+                    value={title}
+                    autoFocus
+                />
             </Modal>
         </>
     );

@@ -24,6 +24,30 @@ export const reducer = (state = initialState, action) => {
                 },
             };
         }
+        case STATUS_ACTIONS.REMOVE_LIST: {
+            const copy = {
+                ...state,
+                lists: {
+                    ...state.lists,
+                },
+            };
+
+            delete copy[action.payload.id];
+
+            return copy;
+        }
+        case STATUS_ACTIONS.ADD_LIST_COLLABS: {
+            return {
+                ...state,
+                lists: {
+                    ...state.lists,
+                    [action.payload.id]: {
+                        ...state.lists[action.payload.id],
+                        collaborators: action.payload.collaborators,
+                    },
+                },
+            };
+        }
         default:
             return state;
     }

@@ -16,7 +16,7 @@ export class ChangesQueue {
 
     push(pushModel) {
         if (!this.queueById[pushModel.id]) {
-            this.queueById[pushModel.id][pushModel.listId] = [pushModel];
+            this.queueById[pushModel.id] = [pushModel];
             return;
         }
 

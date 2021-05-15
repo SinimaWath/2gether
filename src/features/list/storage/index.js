@@ -40,12 +40,14 @@ export function createList({ id, owner, changes }) {
 }
 
 export function getListById({ id }) {
+    console.log(listStorage);
     return listStorage.get(id);
 }
 
 export function getListsByUserEmail({ email }) {
     const lists = {};
 
+    console.log(listStorage);
     listStorage.forEach((list) => {
         if (isUserCanEditList({ id: list.staticState.id, email })) {
             lists[list.staticState.id] = { ...list, state: JSON.stringify(save(list.state)) };

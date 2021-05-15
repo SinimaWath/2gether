@@ -1,0 +1,40 @@
+.emptyListWrapper {
+    display: flex;
+    justify-content: start;
+    height: 100%;
+    padding-top: 200px;
+    flex-direction: column;
+    align-items: center;
+}
+
+.emptyListWrapper > * {
+    margin-bottom: 16px;
+}
+
+.listWrapper {
+    height: 100%;
+    padding: 16px 42px;
+}
+
+.title {
+    font-size: 32px;
+}
+
+.title::first-letter {
+    color: rgb(233, 79, 50);
+}
+
+.listHead {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    word-break: break-all;
+}
+
+.listHeadSettings {
+    height: 50px;
+    margin-left: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

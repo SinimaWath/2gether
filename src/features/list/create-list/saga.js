@@ -17,7 +17,7 @@ export function* rootCreateListSaga() {
 
         const initChanges = getChanges(emptyDoc, listDoc);
 
-        yield fetch('api/push/list', {
+        yield fetch('/api/push/list', {
             method: 'POST',
             body: JSON.stringify({ listId: payload.id, changes: JSON.stringify(initChanges) }),
             headers: {
@@ -25,7 +25,7 @@ export function* rootCreateListSaga() {
             },
         });
 
-        const email = yield select((state) => console.log(state));
+        const email = yield select((state) => state.status.user.email);
 
         yield put(
             addList({
