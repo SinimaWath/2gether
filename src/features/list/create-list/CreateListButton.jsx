@@ -1,8 +1,10 @@
 import { Button, Input, Modal } from 'antd';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { createListModalOk } from './actions';
 import { generateListId } from '../id';
+import { PlusOutlined } from '@ant-design/icons';
+import style from './style.module.css';
 
 export const CreateListButton = () => {
     const dispatch = useDispatch();
@@ -10,6 +12,22 @@ export const CreateListButton = () => {
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [title, setTitle] = useState(undefined);
     const titleValueRef = useRef(undefined);
+
+    useEffect(() => {
+        const onKeyDown = (event) => {
+            if (event.keyCode !== 13) {
+                return;
+            }
+
+            handleOk();
+        };
+
+        document.addEventListener('keydown', onKeyDown);
+
+        return () => {
+            document.removeEventListener('keydown', onKeyDown);
+        };
+    }, [title, isModalVisible]);
 
     const showModal = () => {
         setIsModalVisible(true);
@@ -33,7 +51,14 @@ export const CreateListButton = () => {
 
     return (
         <>
-            <Button onClick={showModal}>New List</Button>
+            <Button
+                onClick={showModal}
+                icon={<PlusOutlined />}
+                type={'text'}
+                className={style.text}
+            >
+                New List
+            </Button>
             <Modal
                 title={'Create New List'}
                 visible={isModalVisible}
