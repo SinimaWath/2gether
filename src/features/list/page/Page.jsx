@@ -11,6 +11,8 @@ import { addList, pullList } from '../../status/actions';
 import { Title } from '../title/Title';
 import Spin from 'antd/lib/spin';
 
+const listSyncPeriodInterval = parseInt(process.env.LIST_SYNC_INTERVAL, 10);
+
 export const ListPage = ({ id, notFound, list }) => {
     const listOwner = useSelector((state) => state.status.lists[id]?.owner);
     const listCollabs = useSelector((state) => state.status.lists[id]?.collaborators);
@@ -19,17 +21,20 @@ export const ListPage = ({ id, notFound, list }) => {
     const [session, loading] = useSession();
     const intervalRef = useRef();
 
-    // useEffect(() => {
-    //     if (!intervalRef.current && id) {
-    //         intervalRef.current = setInterval(() => dispatch(pullList({ listId: id })), 1000);
-    //     }
-    //
-    //     return () => {
-    //         if (intervalRef.current) {
-    //             clearInterval(intervalRef.current);
-    //         }
-    //     };
-    // }, [id, notFound, list]);
+    useEffect(() => {
+        if (!intervalRef.current && id) {
+            intervalRef.current = setInterval(
+                () => dispatch(pullList({ listId: id })),
+                listSyncPeriodInterval
+            );
+        }
+
+        return () => {
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current);
+            }
+        };
+    }, [id, notFound, list]);
 
     useEffect(() => {
         if (!list) {

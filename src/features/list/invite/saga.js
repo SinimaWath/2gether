@@ -81,3 +81,17 @@ export function* rootExitSaga() {
         yield put(removeList({ id }));
     });
 }
+
+export function* rootRemoveListSaga() {
+    yield takeEvery(INVITE_TO_LIST_ACTION.REMOVE_LIST, function* ({ payload: { id } }) {
+        if (!listDocRegistry[id]) {
+            return;
+        }
+
+        yield fetch(`/api/push/remove-list?listId=${id}`);
+
+        delete listDocRegistry[id];
+
+        yield put(removeList({ id }));
+    });
+}

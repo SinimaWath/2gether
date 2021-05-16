@@ -7,6 +7,7 @@ import { signOut, useSession } from 'next-auth/client';
 import { useEffect, useRef } from 'react';
 import styles from './index.module.css';
 import Link from 'next/link';
+const statusSyncPeriodInterval = parseInt(process.env.STATUS_SYNC_INTERVAL, 10);
 
 export const MainLayout = ({ children }) => {
     const dispatch = useDispatch();
@@ -24,7 +25,10 @@ export const MainLayout = ({ children }) => {
             }
 
             if (!statusLoadTimeoutRef.current) {
-                statusLoadTimeoutRef.current = setInterval(() => dispatch(fetchStatus()), 7000);
+                statusLoadTimeoutRef.current = setInterval(
+                    () => dispatch(fetchStatus()),
+                    statusSyncPeriodInterval
+                );
             }
         }
 

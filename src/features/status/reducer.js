@@ -12,6 +12,10 @@ export const reducer = (state = initialState, action) => {
             return {
                 ...state,
                 ...action.payload,
+                lists: {
+                    ...state.lists,
+                    ...action.payload.lists,
+                },
             };
         case STATUS_ACTIONS.ADD_LIST: {
             return {

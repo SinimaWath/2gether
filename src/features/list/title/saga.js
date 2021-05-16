@@ -11,11 +11,26 @@ import { TITLE_ACTIONS } from './action';
 // insertText
 // deleteContentBackward
 export function* rootChangeTitleSaga() {
+    let prevDoc = null;
+    let prevDocId = null;
+    let lastFireTime = null;
+
     yield takeEvery(
         TITLE_ACTIONS.CHANGE,
         function* ({ payload: { id, data, type, selectionStart, selectionEnd } }) {
-            const prevDoc = listDocRegistry[id];
+            if (prevDocId !== id) {
+                prevDoc = listDocRegistry[id];
+                prevDocId = id;
+            }
 
+            if (!prevDoc) {
+                prevDoc = listDocRegistry[id];
+                prevDocId = id;
+            }
+
+            console.log('change', data, selectionStart, selectionEnd);
+
+            console.log(listDocRegistry[id]);
             listDocRegistry[id] = change(listDocRegistry[id], (doc) => {
                 switch (type) {
                     case 'insertText': {
@@ -23,7 +38,6 @@ export function* rootChangeTitleSaga() {
                         break;
                     }
                     case 'deleteContentBackward': {
-                        console.log(selectionStart, selectionEnd);
                         if (selectionStart === selectionEnd && selectionStart === 0) {
                             break;
                         }
@@ -42,6 +56,14 @@ export function* rootChangeTitleSaga() {
             const changes = getChanges(prevDoc, listDocRegistry[id]);
 
             yield put(changeListTitle({ id, title: listDocRegistry[id].title.toString() }));
+
+            console.log(performance.now() - lastFireTime);
+            if (changes.length < 5 && performance.now() - lastFireTime < 2000) {
+                return;
+            }
+
+            lastFireTime = performance.now();
+            prevDoc = listDocRegistry[id];
 
             const response = yield pushListChanges(id, changes);
             if (response.status !== 200) {

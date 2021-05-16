@@ -4,7 +4,7 @@ import style from './style.module.css';
 import { changeTitle } from './action';
 import { connect, useDispatch, useSelector } from 'react-redux';
 
-class Title2 extends React.Component {
+class Title2 extends React.PureComponent {
     constructor(...args) {
         super(...args);
 
@@ -56,6 +56,22 @@ class Title2 extends React.Component {
         this.setState({ editing: false });
     }
 
+    // shouldComponentUpdate(nextProps, nextState) {
+    //     if (this.state.editing !== nextState.editing) {
+    //         return true;
+    //     }
+    //
+    //     if (this.props.title === nextProps.title) {
+    //         return false;
+    //     }
+    //
+    //     if (this.props.listId === nextProps.listId) {
+    //         return false;
+    //     }
+    //
+    //     return true;
+    // }
+
     handleKeyDown(event) {
         if (event.keyCode !== 46 && event.keyCode !== 8) {
             return;
@@ -75,6 +91,7 @@ class Title2 extends React.Component {
 
     render() {
         const { title } = this.props;
+        console.log('render');
         return this.state.editing ? (
             <Input
                 value={title}

@@ -9,7 +9,7 @@ import style from './style.module.css';
 import React, { useState, useRef } from 'react';
 import Search from 'antd/lib/input/Search';
 import { useDispatch, useSelector } from 'react-redux';
-import { invite, remove, exit } from '../invite/actions';
+import { invite, remove, exit, removeList } from '../invite/actions';
 import Text from 'antd/lib/typography/Text';
 import { useSession } from 'next-auth/client';
 
@@ -27,15 +27,15 @@ export const ListSettings = ({ listId }) => {
     const isOwner = list.owner === session.user.email;
 
     const onAdd = (value) => {
-        dispatch(invite({ email: value, id: listId }));
+        dispatch(invite({ email: value.trim(), id: listId }));
     };
 
     const onRemove = (value) => {
-        dispatch(remove({ email: value, id: listId }));
+        dispatch(remove({ email: value.trim(), id: listId }));
     };
 
     const onExit = () => {
-        dispatch(exit({ email: session.user.email, id: listId }));
+        dispatch(exit({ email: session.user.email.trim(), id: listId }));
     };
 
     const onHandleOpen = () => {
@@ -65,6 +65,7 @@ export const ListSettings = ({ listId }) => {
                     icon={<DeleteOutlined style={{ fontSize: '16px' }} />}
                     danger
                     className={style.menuItem}
+                    onClick={() => dispatch(removeList({ id: listId }))}
                 >
                     Delete
                 </Menu.Item>

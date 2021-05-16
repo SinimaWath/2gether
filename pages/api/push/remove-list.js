@@ -1,16 +1,16 @@
 import { getSession } from 'next-auth/client';
-import { listChangesQueue } from '../../../src/features/list/queue';
+import { removeListById } from '../../../src/features/list/storage';
 
 export default async function handler(req, res) {
     const session = await getSession({ req });
     if (!session) {
         res.status = 401;
         res.end();
+        return;
     }
 
     const { listId } = req.query;
-    const email = session.user.email;
-    const changes = await listChangesQueue.pull({ id: listId, by: email });
 
-    return res.status(200).json({ changes });
+    await removeListById({ id: listId, owner: session.user.email });
+    res.status(200).json();
 }

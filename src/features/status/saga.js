@@ -3,9 +3,12 @@ import { put, all, fork, takeEvery } from 'redux-saga/effects';
 import { jsonArrayToUint8Array, jsonToUint8Array } from '../parsing';
 import { load } from 'automerge';
 import { listDocRegistry } from '../list/document';
-import { addList, setStatus, STATUS_ACTIONS } from './actions';
-import { applyChanges, save, init } from 'automerge';
+import { addList, changeListTitle, setStatus, STATUS_ACTIONS } from './actions';
+import { applyChanges, decodeChange, init } from 'automerge';
 import { changeTitle } from '../list/title/action';
+
+const LIST_RE = /\/list\/([^\/\?]+)/;
+let currentLoaded = false;
 
 export function* fetchStatusSaga() {
     yield takeEvery(STATUS_ACTIONS.FETCH_STATUS, function* () {
@@ -14,7 +17,23 @@ export function* fetchStatusSaga() {
 
         const listsForState = {};
 
+        const pathname = window.location.pathname;
+
+        let currentList = null;
+        const match = pathname.match(LIST_RE);
+        if (match && match[1]) {
+            currentList = match[1];
+        }
+
         Object.entries(response.state.lists || {}).forEach(([id, list]) => {
+            if (id === currentList && currentLoaded) {
+                return;
+            }
+
+            if (id === currentList) {
+                currentLoaded = true;
+            }
+
             const uintDoc = jsonToUint8Array(list.state);
 
             listDocRegistry[id] = load(uintDoc);
@@ -37,13 +56,26 @@ function* pullList() {
             const response = yield fetch(`/api/pull/list?listId=${listId}`);
             const { changes } = yield response.json();
 
-            const changesAutomerge = jsonArrayToUint8Array(changes);
+            if (!changes || !changes.length) {
+                return;
+            }
 
-            listDocRegistry[listId] = applyChanges(listDocRegistry[listId], changesAutomerge);
+            changes.forEach((change) => {
+                const changesAutomerge = jsonArrayToUint8Array(change);
 
-            yield put(changeTitle({ id: listId, title: listDocRegistry[listId].title.toString() }));
+                changesAutomerge.forEach((c) => console.log(decodeChange(c)));
+
+                listDocRegistry[listId] = applyChanges(
+                    listDocRegistry[listId],
+                    changesAutomerge
+                )[0];
+            });
+
+            yield put(
+                changeListTitle({ id: listId, title: listDocRegistry[listId].title.toString() })
+            );
         } catch (e) {
-
+            console.log(e);
         }
     });
 }

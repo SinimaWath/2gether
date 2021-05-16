@@ -2,7 +2,6 @@ import { getSession } from 'next-auth/client';
 import { createList, getListById, updateListStateById } from '../../../src/features/list/storage';
 import { jsonArrayToUint8Array, jsonToUint8Array } from '../../../src/features/parsing';
 import { listChangesQueue } from '../../../src/features/list/queue';
-import Redis from 'ioredis';
 
 export default async function handler(req, res) {
     const session = await getSession({ req });
@@ -33,16 +32,14 @@ export default async function handler(req, res) {
         by: session.user.email,
     };
 
-    // listChangesQueue.push(task);
-    //
     // to backup and first load
     await updateListStateById({
         id: listId,
         changes: jsonArrayToUint8Array(changes),
         owner: session.user.email,
     });
-    //
-    // const thereOtherChanges = listChangesQueue.checkNotUserChanges(task);
+
+    await listChangesQueue.push(task);
 
     res.status(200).json({ needPull: false });
 }
