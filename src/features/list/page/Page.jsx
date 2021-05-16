@@ -10,9 +10,11 @@ import { useSession } from 'next-auth/client';
 import { addList, pullList } from '../../status/actions';
 import { Title } from '../title/Title';
 import Spin from 'antd/lib/spin';
+import getConfig from 'next/config';
 
-const listSyncPeriodInterval = parseInt(process.env.LIST_SYNC_INTERVAL, 10);
+const { publicRuntimeConfig } = getConfig();
 
+console.log(publicRuntimeConfig);
 export const ListPage = ({ id, notFound, list }) => {
     const listOwner = useSelector((state) => state.status.lists[id]?.owner);
     const listCollabs = useSelector((state) => state.status.lists[id]?.collaborators);
@@ -25,7 +27,7 @@ export const ListPage = ({ id, notFound, list }) => {
         if (!intervalRef.current && id) {
             intervalRef.current = setInterval(
                 () => dispatch(pullList({ listId: id })),
-                listSyncPeriodInterval
+                publicRuntimeConfig.listSyncInterval
             );
         }
 
