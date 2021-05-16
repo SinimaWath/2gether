@@ -78,5 +78,7 @@ export function* rootExitSaga() {
         }
 
         yield put(removeList({ id }));
+
+        Promise.resolve().then(() => (location.pathname = '/app'));
     });
 }

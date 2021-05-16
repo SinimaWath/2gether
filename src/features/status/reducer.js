@@ -48,6 +48,18 @@ export const reducer = (state = initialState, action) => {
                 },
             };
         }
+        case STATUS_ACTIONS.CHANGE_LIST_TITLE: {
+            return {
+                ...state,
+                lists: {
+                    ...state.lists,
+                    [action.payload.id]: {
+                        ...state.lists[action.payload.id],
+                        title: action.payload.title,
+                    },
+                },
+            };
+        }
         default:
             return state;
     }

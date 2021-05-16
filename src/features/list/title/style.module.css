@@ -1,0 +1,19 @@
+.title {
+    font-size: 32px;
+    cursor: pointer;
+    padding: 0 12px;
+    margin-left: -12px;
+}
+
+.title::first-letter {
+    color: rgb(233, 79, 50);
+}
+
+.title:hover {
+    background-color: #f3f3f3;
+    border-radius: 12px;
+}
+
+.editable {
+    font-size: 32px;
+}

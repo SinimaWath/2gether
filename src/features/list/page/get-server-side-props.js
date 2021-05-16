@@ -1,6 +1,8 @@
 import { getSession } from 'next-auth/client';
 import { getListById } from '../storage';
 import { listDocRegistry } from '../document';
+import { applyChanges, load, save, init } from 'automerge';
+import { jsonToUint8Array } from '../../parsing';
 
 export const getServerSideProps = async (ctx) => {
     const session = await getSession(ctx);
@@ -14,7 +16,7 @@ export const getServerSideProps = async (ctx) => {
     }
 
     const id = ctx.query.id;
-    const list = getListById({ id });
+    const list = await getListById({ id });
 
     if (!list) {
         return {
@@ -23,6 +25,9 @@ export const getServerSideProps = async (ctx) => {
             },
         };
     }
+    console.log(list.state);
+
+    const state = load(jsonToUint8Array(list.state));
 
     return {
         props: {
@@ -30,8 +35,8 @@ export const getServerSideProps = async (ctx) => {
             list: {
                 id,
                 owner: list.staticState.owner,
-                title: list.state.title.toString(),
-                collaborators: list.state.collaborators,
+                title: state.title.toString(),
+                collaborators: state.collaborators,
             },
         },
     };

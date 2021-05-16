@@ -15,7 +15,7 @@
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^3.4.0",
     "eslint-plugin-react": "^7.23.2",
-    "lodash": "^4.17.21",
+    "ioredis": "^4.27.2",
     "nanoid": "^3.1.22",
     "next": "10.2.0",
     "next-auth": "^3.20.1",

@@ -1,8 +1,8 @@
 import { CreateListButton } from '../../list/create-list/CreateListButton';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchStatus } from '../../status/actions';
-import { Layout, Menu, Breadcrumb, Button } from 'antd';
-import { UnorderedListOutlined, UserOutlined } from '@ant-design/icons';
+import { Layout, Menu, Breadcrumb, Button, Tooltip } from 'antd';
+import { UnorderedListOutlined, UserOutlined, TeamOutlined } from '@ant-design/icons';
 import { signOut, useSession } from 'next-auth/client';
 import { useEffect, useRef } from 'react';
 import styles from './index.module.css';
@@ -10,7 +10,7 @@ import Link from 'next/link';
 
 export const MainLayout = ({ children }) => {
     const dispatch = useDispatch();
-    const [session, loading] = useSession();
+    const [session] = useSession();
     const statusLoadTimeoutRef = useRef();
 
     useEffect(() => {
@@ -24,7 +24,7 @@ export const MainLayout = ({ children }) => {
             }
 
             if (!statusLoadTimeoutRef.current) {
-                statusLoadTimeoutRef.current = setInterval(() => dispatch(fetchStatus()), 10000);
+                statusLoadTimeoutRef.current = setInterval(() => dispatch(fetchStatus()), 7000);
             }
         }
 
@@ -40,8 +40,8 @@ export const MainLayout = ({ children }) => {
     const transformedLists = Object.values(lists || {});
 
     return (
-        <Layout style={{ minHeight: '100vh' }}>
-            <Layout.Sider width={400}>
+        <Layout style={{ minHeight: '100vh' }} className={'ant-layout-has-sider'}>
+            <Layout.Sider width={400} style={{ background: '#001529' }}>
                 <div className={styles.logo}>
                     <span className={styles.first}>2</span>GETHER
                 </div>
@@ -65,16 +65,31 @@ export const MainLayout = ({ children }) => {
                             </Button>
                         </Menu.Item>
                     </Menu.SubMenu>
-                    <Menu.SubMenu key="lists" icon={<UnorderedListOutlined />} title="Lists">
-                        {transformedLists.map(({ id, title }) => {
-                            return (
-                                <Menu.Item key={id}>
-                                    <Link href={`/list/${id}`}>{title}</Link>
-                                </Menu.Item>
-                            );
-                        })}
-                        <Menu.Divider />
-                    </Menu.SubMenu>
+                    {!!transformedLists.length && (
+                        <Menu.SubMenu key="lists" icon={<UnorderedListOutlined />} title="Lists">
+                            {transformedLists.map(({ id, title, collaborators }) => {
+                                return (
+                                    <Menu.Item key={id}>
+                                        <Link href={`/list/${id}`}>
+                                            <div className={styles.listlink}>
+                                                {title}
+                                                {!!collaborators?.length && (
+                                                    <Tooltip title={'Collaborative list'}>
+                                                        <TeamOutlined
+                                                            style={{
+                                                                fontSize: '20px',
+                                                                lineHeight: '42px',
+                                                            }}
+                                                        />
+                                                    </Tooltip>
+                                                )}
+                                            </div>
+                                        </Link>
+                                    </Menu.Item>
+                                );
+                            })}
+                        </Menu.SubMenu>
+                    )}
                     <Menu.Item className={styles.listButtonItem}>
                         <CreateListButton />
                     </Menu.Item>

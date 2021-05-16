@@ -12,16 +12,9 @@
 }
 
 .listWrapper {
+    max-width: 900px;
     height: 100%;
     padding: 16px 42px;
-}
-
-.title {
-    font-size: 32px;
-}
-
-.title::first-letter {
-    color: rgb(233, 79, 50);
 }
 
 .listHead {

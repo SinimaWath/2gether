@@ -1,16 +1,55 @@
-import { useSelector } from 'react-redux';
-import React from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import React, { useEffect, useRef } from 'react';
 import { MainLayout } from '../../app/layout/Layout';
 import { Empty } from 'antd';
 import style from './style.module.css';
 import { CreateListButton } from '../create-list/CreateListButton';
 import { ListSettings } from '../list-settings/ListSettings';
-import { useRouter } from 'next/router';
+import Text from 'antd/lib/typography/Text';
+import { useSession } from 'next-auth/client';
+import { addList, pullList } from '../../status/actions';
+import { Title } from '../title/Title';
+import Spin from 'antd/lib/spin';
 
 export const ListPage = ({ id, notFound, list }) => {
-    const listFromState = useSelector((state) => state.status.lists[id]);
-    const router = useRouter();
-    if (notFound) {
+    const listOwner = useSelector((state) => state.status.lists[id]?.owner);
+    const listCollabs = useSelector((state) => state.status.lists[id]?.collaborators);
+
+    const dispatch = useDispatch();
+    const [session, loading] = useSession();
+    const intervalRef = useRef();
+
+    // useEffect(() => {
+    //     if (!intervalRef.current && id) {
+    //         intervalRef.current = setInterval(() => dispatch(pullList({ listId: id })), 1000);
+    //     }
+    //
+    //     return () => {
+    //         if (intervalRef.current) {
+    //             clearInterval(intervalRef.current);
+    //         }
+    //     };
+    // }, [id, notFound, list]);
+
+    useEffect(() => {
+        if (!list) {
+            return;
+        }
+
+        dispatch(addList(list));
+    }, []);
+
+    if (loading) {
+        return (
+            <MainLayout>
+                <div className={style.emptyListWrapper}>
+                    <Spin size={'large'} />
+                </div>
+            </MainLayout>
+        );
+    }
+
+    if (notFound || !listOwner || !listCollabs) {
         return (
             <MainLayout>
                 <div className={style.emptyListWrapper}>
@@ -24,16 +63,19 @@ export const ListPage = ({ id, notFound, list }) => {
         );
     }
 
-    let listToUse = listFromState || list;
-    if (!listToUse) {
-        router.replace('/app');
-    }
+    const isOwner = listOwner === session.user.email;
+    const isCollabarative = !!listCollabs.length;
 
     return (
         <MainLayout>
             <div className={style.listWrapper}>
+                {isCollabarative && (
+                    <Text type={'secondary'}>
+                        {isOwner ? `You're owner` : `Owner: ${listOwner}`}
+                    </Text>
+                )}
                 <div className={style.listHead}>
-                    <h2 className={style.title}>{listToUse.title}</h2>
+                    <Title listId={id} />
                     <div className={style.listHeadSettings}>
                         <ListSettings listId={id} />
                     </div>

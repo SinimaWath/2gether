@@ -6,7 +6,7 @@ import {
     DeleteOutlined,
 } from '@ant-design/icons';
 import style from './style.module.css';
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import Search from 'antd/lib/input/Search';
 import { useDispatch, useSelector } from 'react-redux';
 import { invite, remove, exit } from '../invite/actions';
@@ -18,6 +18,11 @@ export const ListSettings = ({ listId }) => {
     const dispatch = useDispatch();
     const list = useSelector((state) => state.status.lists[listId]);
     const [session] = useSession();
+    const searchRef = useRef();
+
+    if (!list) {
+        return null;
+    }
 
     const isOwner = list.owner === session.user.email;
 
@@ -33,6 +38,15 @@ export const ListSettings = ({ listId }) => {
         dispatch(exit({ email: session.user.email, id: listId }));
     };
 
+    const onHandleOpen = () => {
+        setIsModalVisible(true);
+        if (!searchRef.current) {
+            return;
+        }
+
+        setTimeout(() => searchRef.current.focus(), 200);
+    };
+
     const collaborators = list?.collaborators || [];
 
     const ListMenu = () => {
@@ -41,7 +55,7 @@ export const ListSettings = ({ listId }) => {
                 <Menu.Item
                     key={'Invite Collaborators'}
                     icon={<UsergroupAddOutlined style={{ fontSize: '16px' }} />}
-                    onClick={() => setIsModalVisible(true)}
+                    onClick={onHandleOpen}
                     className={style.menuItem}
                 >
                     Invite Collaborators
@@ -86,10 +100,12 @@ export const ListSettings = ({ listId }) => {
                 onCancel={() => setIsModalVisible(false)}
             >
                 <Search
+                    ref={searchRef}
                     placeholder="Input collaborator email"
                     allowClear
                     enterButton="Invite"
                     size="large"
+                    autoFocus
                     onSearch={onAdd}
                 />
                 {!!collaborators.length && (

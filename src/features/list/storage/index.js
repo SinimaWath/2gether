@@ -1,7 +1,11 @@
 import { generateListId } from '../id';
-import { applyChanges, load, save, init } from 'automerge';
+import { applyChanges, save, init, load } from 'automerge';
+import { redis } from '../../../redis';
+import { jsonToUint8Array } from '../../parsing';
 
 const listStorage = new Map();
+
+const REDIS_KEY = 'lists';
 
 // to remove
 const ListModel = {
@@ -20,56 +24,62 @@ export const AlreadyExist = new Error('List Already Exist');
 export const Forbidden = new Error('Forbid to change list');
 export const InvalidChangesType = new Error('Invalid changes type');
 
-export function createList({ id, owner, changes }) {
-    const listId = id || generateListId();
-    if (listStorage.has(listId)) {
-        throw AlreadyExist;
-    }
-
+export async function createList({ id, owner, changes }) {
     const state = applyChanges(init(), changes)[0];
 
-    listStorage.set(listId, {
+    const obj = {
         staticState: {
             owner,
-            id: listId,
+            id,
         },
-        state,
-    });
+        state: save(state),
+    };
 
-    console.log('createList', listStorage.get(listId));
+    await redis.hset(REDIS_KEY, id, JSON.stringify(obj));
 }
 
-export function getListById({ id }) {
-    console.log(listStorage);
-    return listStorage.get(id);
+export async function getListById({ id }) {
+    const value = await redis.hget(REDIS_KEY, id);
+    console.log(value);
+
+    if (!value) {
+        return null;
+    }
+
+    return JSON.parse(value);
 }
 
-export function getListsByUserEmail({ email }) {
+export async function getListsByUserEmail({ email }) {
     const lists = {};
 
-    console.log(listStorage);
-    listStorage.forEach((list) => {
-        if (isUserCanEditList({ id: list.staticState.id, email })) {
-            lists[list.staticState.id] = { ...list, state: JSON.stringify(save(list.state)) };
+    const vals = await redis.hvals(REDIS_KEY);
+
+    vals.forEach((listRaw) => {
+        const list = JSON.parse(listRaw);
+        const savedState = list.state;
+
+        list.state = load(jsonToUint8Array(list.state));
+
+        if (isUserCanEditList({ list, email })) {
+            lists[list.staticState.id] = { ...list, state: JSON.stringify(savedState) };
         }
     });
 
     return lists;
 }
 
-export function isUserCanEditList({ email, id }) {
-    const list = listStorage.get(id);
-
+export function isUserCanEditList({ email, list }) {
     console.log(list);
     return list.staticState.owner === email || list.state.collaborators.includes(email);
 }
 
-export function updateListStateById({ id, changes, owner }) {
-    if (!listStorage.has(id)) {
+export async function updateListStateById({ id, changes, owner }) {
+    const list = await getListById({ id });
+    if (!list) {
         throw NotFound;
     }
 
-    if (!isUserCanEditList({ id, email: owner })) {
+    if (!isUserCanEditList({ list, email: owner })) {
         throw Forbidden;
     }
 
@@ -77,14 +87,10 @@ export function updateListStateById({ id, changes, owner }) {
         throw InvalidChangesType;
     }
 
-    const list = listStorage.get(id);
-
-    const listState = list.state;
+    const listState = load(jsonToUint8Array(list.state));
 
     console.log('Before apply', listState, changes);
-    list.state = applyChanges(listState, changes)[0];
+    list.state = save(applyChanges(listState, changes)[0]);
 
-    listStorage.set(id, list);
-
-    console.log('updateListStateById', listStorage.get(id));
+    await redis.hset(REDIS_KEY, id, JSON.stringify(list));
 }
