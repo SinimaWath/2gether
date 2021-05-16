@@ -67,27 +67,29 @@ export const MainLayout = ({ children }) => {
                     </Menu.SubMenu>
                     {!!transformedLists.length && (
                         <Menu.SubMenu key="lists" icon={<UnorderedListOutlined />} title="Lists">
-                            {transformedLists.map(({ id, title, collaborators }) => {
-                                return (
-                                    <Menu.Item key={id}>
-                                        <Link href={`/list/${id}`}>
-                                            <div className={styles.listlink}>
-                                                {title}
-                                                {!!collaborators?.length && (
-                                                    <Tooltip title={'Collaborative list'}>
-                                                        <TeamOutlined
-                                                            style={{
-                                                                fontSize: '20px',
-                                                                lineHeight: '42px',
-                                                            }}
-                                                        />
-                                                    </Tooltip>
-                                                )}
-                                            </div>
-                                        </Link>
-                                    </Menu.Item>
-                                );
-                            })}
+                            {transformedLists
+                                .sort((first, second) => first.id.localeCompare(second.id))
+                                .map(({ id, title, collaborators }) => {
+                                    return (
+                                        <Menu.Item key={id}>
+                                            <Link href={`/list/${id}`}>
+                                                <div className={styles.listlink}>
+                                                    {title}
+                                                    {!!collaborators?.length && (
+                                                        <Tooltip title={'Collaborative list'}>
+                                                            <TeamOutlined
+                                                                style={{
+                                                                    fontSize: '20px',
+                                                                    lineHeight: '42px',
+                                                                }}
+                                                            />
+                                                        </Tooltip>
+                                                    )}
+                                                </div>
+                                            </Link>
+                                        </Menu.Item>
+                                    );
+                                })}
                         </Menu.SubMenu>
                     )}
                     <Menu.Item className={styles.listButtonItem}>

@@ -40,7 +40,7 @@ export async function createList({ id, owner, changes }) {
 
 export async function getListById({ id }) {
     const value = await redis.hget(REDIS_KEY, id);
-    console.log(value);
+    console.log('LIST BY ID', value);
 
     if (!value) {
         return null;
@@ -69,7 +69,6 @@ export async function getListsByUserEmail({ email }) {
 }
 
 export function isUserCanEditList({ email, list }) {
-    console.log(list);
     return list.staticState.owner === email || list.state.collaborators.includes(email);
 }
 
@@ -79,6 +78,9 @@ export async function updateListStateById({ id, changes, owner }) {
         throw NotFound;
     }
 
+    const listState = load(jsonToUint8Array(list.state));
+    list.state = listState;
+
     if (!isUserCanEditList({ list, email: owner })) {
         throw Forbidden;
     }
@@ -87,9 +89,6 @@ export async function updateListStateById({ id, changes, owner }) {
         throw InvalidChangesType;
     }
 
-    const listState = load(jsonToUint8Array(list.state));
-
-    console.log('Before apply', listState, changes);
     list.state = save(applyChanges(listState, changes)[0]);
 
     await redis.hset(REDIS_KEY, id, JSON.stringify(list));

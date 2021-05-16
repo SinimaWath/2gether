@@ -1,15 +1,21 @@
+import { redis } from '../../../redis';
+
 export class ChangesQueue {
-    constructor() {
-        this.queueById = [];
+    constructor(queueName) {
+        this.queueName = queueName;
     }
 
+    push(obj) {
+        redis.lpush(this.queueName, JSON.stringify(obj));
+    }
+    getById(id) {
+        redis.lpush(this.queueName);
+    }
     checkNotUserChanges(pushModel) {
         const queue = this.queueById[pushModel.id];
         if (!queue) {
             return true;
         }
-
-        console.log('checkIsCanBePushed', this.queueById);
 
         return queue.find((pushTask) => pushTask.by !== pushModel.by);
     }

@@ -32,7 +32,7 @@ export const reducer = (state = initialState, action) => {
                 },
             };
 
-            delete copy[action.payload.id];
+            delete copy.lists[action.payload.id];
 
             return copy;
         }

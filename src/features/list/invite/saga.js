@@ -71,6 +71,7 @@ export function* rootExitSaga() {
 
         const changes = getChanges(prevDoc, listDocRegistry[id]);
 
+        console.log(listDocRegistry[id].collaborators);
         const response = yield pushListChanges(id, changes);
         if (response.status !== 200) {
             message.error('Unexpected errors');
@@ -78,7 +79,5 @@ export function* rootExitSaga() {
         }
 
         yield put(removeList({ id }));
-
-        Promise.resolve().then(() => (location.pathname = '/app'));
     });
 }

@@ -13,7 +13,6 @@ export default async function handler(req, res) {
 
     const { taskId, changes } = req.body;
 
-    console.log(getById({ id: taskId }));
 
     // Если нет задачи, то пушить некуда и просто создаем его
     if (!getById({ id: taskId })) {

@@ -15,7 +15,6 @@ export function* fetchStatusSaga() {
         const listsForState = {};
 
         Object.entries(response.state.lists || {}).forEach(([id, list]) => {
-            console.log(id, list);
             const uintDoc = jsonToUint8Array(list.state);
 
             listDocRegistry[id] = load(uintDoc);
@@ -28,7 +27,6 @@ export function* fetchStatusSaga() {
             };
         });
 
-        console.log(response);
         yield put(setStatus({ lists: listsForState, user: response.user }));
     });
 }
@@ -39,12 +37,10 @@ function* pullList() {
             const response = yield fetch(`/api/pull/list?listId=${listId}`);
             const { changes } = yield response.json();
 
-            console.log(changes);
             const changesAutomerge = jsonArrayToUint8Array(changes);
 
             listDocRegistry[listId] = applyChanges(listDocRegistry[listId], changesAutomerge);
 
-            console.log(response);
             yield put(changeTitle({ id: listId, title: listDocRegistry[listId].title.toString() }));
         } catch (e) {
 

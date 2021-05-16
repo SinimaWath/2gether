@@ -23,17 +23,16 @@ export default async function handler(req, res) {
             changes: jsonArrayToUint8Array(changes),
             id: listId,
         });
-        console.log(await getListById({ id: listId }));
         res.status(200).json({});
         return;
     }
 
-    // const task = {
-    //     id: listId,
-    //     changes,
-    //     by: session.user.email,
-    // };
-    //
+    const task = {
+        id: listId,
+        changes,
+        by: session.user.email,
+    };
+
     // listChangesQueue.push(task);
     //
     // to backup and first load

@@ -50,5 +50,3 @@ let listStateClient2_2 = change(listStateClient2_1, (doc) => {
 });
 
 let ch2 = getChanges(listStateClient2_1, listStateClient2_2);
-
-console.log(applyChanges(listStateClient1, [...ch2, ...ch1])[0].text.toString());
