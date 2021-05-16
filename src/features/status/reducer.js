@@ -16,6 +16,10 @@ export const reducer = (state = initialState, action) => {
                     ...state.lists,
                     ...action.payload.lists,
                 },
+                tasks: {
+                    ...state.tasks,
+                    ...action.payload.tasks,
+                },
             };
         case STATUS_ACTIONS.ADD_LIST: {
             return {
@@ -27,6 +31,27 @@ export const reducer = (state = initialState, action) => {
                     },
                 },
             };
+        }
+        case STATUS_ACTIONS.ADD_TASK: {
+            console.log(action.payload.id, action.payload.listId);
+            const staten = {
+                ...state,
+                tasks: {
+                    ...state.tasks,
+                    [action.payload.id]: {
+                        ...action.payload,
+                    },
+                },
+                lists: {
+                    ...state.lists,
+                    [action.payload.listId]: {
+                        ...state.lists[action.payload.listId],
+                        taskIds: action.payload.taskIds,
+                    },
+                },
+            };
+            console.log(staten.tasks);
+            return staten;
         }
         case STATUS_ACTIONS.REMOVE_LIST: {
             const copy = {
@@ -60,6 +85,30 @@ export const reducer = (state = initialState, action) => {
                     [action.payload.id]: {
                         ...state.lists[action.payload.id],
                         title: action.payload.title,
+                    },
+                },
+            };
+        }
+        case STATUS_ACTIONS.CHANGE_TASK_TITLE: {
+            return {
+                ...state,
+                tasks: {
+                    ...state.tasks,
+                    [action.payload.id]: {
+                        ...state.tasks[action.payload.id],
+                        title: action.payload.title,
+                    },
+                },
+            };
+        }
+        case STATUS_ACTIONS.CHANGE_TASK_DONE: {
+            return {
+                ...state,
+                tasks: {
+                    ...state.tasks,
+                    [action.payload.id]: {
+                        ...state.tasks[action.payload.id],
+                        done: action.payload.done,
                     },
                 },
             };

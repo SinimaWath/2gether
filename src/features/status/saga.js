@@ -6,6 +6,7 @@ import { listDocRegistry } from '../list/document';
 import { addList, changeListTitle, setStatus, STATUS_ACTIONS } from './actions';
 import { applyChanges, decodeChange, init } from 'automerge';
 import { changeTitle } from '../list/title/action';
+import { taskDocRegistry } from '../task/document';
 
 const LIST_RE = /\/list\/([^\/\?]+)/;
 let currentLoaded = false;
@@ -43,10 +44,27 @@ export function* fetchStatusSaga() {
                 owner: list.staticState.owner,
                 title: listDocRegistry[id].title?.toString() || '',
                 collaborators: listDocRegistry[id].collaborators,
+                taskIds: listDocRegistry[id].taskIds,
             };
         });
 
-        yield put(setStatus({ lists: listsForState, user: response.user }));
+        const tasksForState = {};
+
+        Object.entries(response.state.tasks || {}).forEach(([id, task]) => {
+            const uintDoc = jsonToUint8Array(task.state);
+
+            taskDocRegistry[id] = load(uintDoc);
+
+            tasksForState[id] = {
+                id,
+                owner: task.staticState.owner,
+                title: taskDocRegistry[id].title?.toString() || '',
+                listId: task.staticState.listId,
+                done: taskDocRegistry[id].done,
+            };
+        });
+
+        yield put(setStatus({ lists: listsForState, tasks: tasksForState, user: response.user }));
     });
 }
 

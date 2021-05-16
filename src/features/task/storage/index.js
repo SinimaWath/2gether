@@ -1,82 +1,143 @@
-import { generateListId, generateTaskId } from '../id';
-import { applyChanges, load, save, init } from 'automerge';
+import { applyChanges, init, load, save } from 'automerge';
+import { redis } from '../../../redis';
+import { jsonToUint8Array } from '../../parsing';
 import { getListById, isUserCanEditList } from '../../list/storage';
 
-const taskStorage = new Map();
-
-// to remove
-const TaskModel = {
-    staticState: {
-        id: 'list:',
-        owner: 'email',
-    },
-    state: {
-        listId: '',
-        done: false,
-        text: '',
-    },
-};
+const REDIS_KEY_LISTS = 'lists';
+const REDIS_KEY = 'tasks';
 
 export const NotFound = new Error('Task Not Found');
-export const AlreadyExist = new Error('Task Already Exist');
-export const Forbidden = new Error('Forbid to change task');
+export const ListNotFound = new Error('List Not Found');
+
+export const AlreadyExist = new Error('List Already Exist');
+export const Forbidden = new Error('Forbid to change list');
+export const ForbiddenToList = new Error('Forbid to get tasks from list');
+
 export const InvalidChangesType = new Error('Invalid changes type');
 
-export function create({ id, owner, changes }) {
-    const taskId = id || generateTaskId();
-    if (taskStorage.has(taskId)) {
-        throw AlreadyExist;
-    }
-
+export async function createTask({ id, listId, owner, changes }) {
     const state = applyChanges(init(), changes)[0];
 
-    taskStorage.set(taskId, {
+    const obj = {
         staticState: {
             owner,
-            id: taskId,
+            id,
+            listId,
         },
-        state,
-    });
+        state: save(state),
+    };
+
+    await redis.hset(REDIS_KEY, id, JSON.stringify(obj));
 }
 
-export function getById({ id }) {
-    return taskStorage.get(id);
+export async function getTaskById({ id }) {
+    const value = await redis.hget(REDIS_KEY, id);
+    if (!value) {
+        return null;
+    }
+
+    return JSON.parse(value);
 }
 
-export function getByUserEmail({ email }) {
-    const tasks = {};
+export async function removeTaskById({ id, owner }) {
+    const list = await getTaskById({ id });
+    if (!list) {
+        return;
+    }
 
-    taskStorage.forEach((task) => {
-        if (isUserCanEditList({ email, id: task.state.listId })) {
-            tasks[task.staticState.id] = { ...task, state: save(task.state).toString() };
+    if (list.staticState.owner !== owner) {
+        return;
+    }
+
+    await redis.hset(REDIS_KEY, id, '');
+}
+
+export async function getTasksByListId({ email, listId }) {
+    const list = await getListById({ id: listId });
+    if (!list) {
+        throw ListNotFound;
+    }
+
+    if (!isUserCanEditList({ email, list })) {
+        throw ForbiddenToList;
+    }
+
+    const tasksToGet = list.tasksIds;
+    if (!tasksToGet || !tasksToGet.length) {
+        return [];
+    }
+
+    const tasks = redis.hmget(REDIS_KEY, tasksToGet);
+
+    const tasksToReturn = [];
+    tasks.forEach((taskRaw) => {
+        if (!taskRaw) {
+            return;
         }
+
+        const task = JSON.parse(taskRaw);
+
+        tasksToReturn.push(task);
     });
 
-    return tasks;
+    return tasksToReturn;
 }
 
-export function updateStateById({ id, changes, owner }) {
-    if (!taskStorage.has(id)) {
-        throw NotFound;
+export async function getTasksByEmail({ email }) {
+    const tasks = await redis.hvals(REDIS_KEY);
+    if (!tasks) {
+        return {};
     }
 
-    if (typeof changes === 'string') {
-        throw InvalidChangesType;
+    const tasksToReturn = {};
+
+    for (const taskRaw of tasks) {
+        if (!taskRaw) {
+            continue;
+        }
+
+        const task = JSON.parse(taskRaw);
+
+        if (task.staticState.owner === email) {
+            tasksToReturn[task.staticState.id] = task;
+            continue;
+        }
+
+        const list = await getListById({ id: task.staticState.listId });
+        if (!list) {
+            continue;
+        }
+
+        list.state = load(jsonToUint8Array(list.state));
+        if (!isUserCanEditList({ list, email })) {
+            continue;
+        }
+
+        tasksToReturn[task.staticState.id] = task;
     }
 
-    const task = taskStorage.get(id);
+    return tasksToReturn;
+}
 
-    // Если пользователь может менять список => может менять любую задачу в списке
-    if (!isUserCanEditList({ email: owner, id: task.state.listId })) {
+export async function updateTaskStateById({ id, listId, changes, owner }) {
+    const list = await getListById({ id: listId });
+    if (!list) {
+        throw ListNotFound;
+    }
+
+    list.state = load(jsonToUint8Array(list.state));
+
+    if (!isUserCanEditList({ list, email: owner })) {
         throw Forbidden;
     }
 
-    const taskState = task.state;
+    const task = await getTaskById({ id });
 
-    console.log('Before apply', taskState, changes);
-    task.state = applyChanges(taskState, changes)[0];
+    task.state = load(jsonToUint8Array(task.state));
 
-    taskStorage.set(id, task);
+    task.state = applyChanges(task.state, changes)[0];
 
-    console.log('updateTaskStateById', taskStorage.get(id));
+    task.state = save(task.state);
+
+    await redis.hset(REDIS_KEY, id, JSON.stringify(task));
 }

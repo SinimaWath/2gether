@@ -1,0 +1,8 @@
+.root {
+    display: flex;
+    margin-bottom: 8px;
+}
+
+.checkbox {
+    margin: auto 0;
+}

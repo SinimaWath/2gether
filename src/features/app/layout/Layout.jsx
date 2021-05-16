@@ -46,6 +46,8 @@ export const MainLayout = ({ children }) => {
 
     const transformedLists = Object.values(lists || {});
 
+    console.log(transformedLists);
+
     return (
         <Layout style={{ minHeight: '100vh' }} className={'ant-layout-has-sider'}>
             <Layout.Sider width={400} style={{ background: '#001529' }}>

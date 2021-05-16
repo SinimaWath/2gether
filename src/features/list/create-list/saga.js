@@ -11,6 +11,7 @@ export function* rootCreateListSaga() {
         const listDoc = change(emptyDoc, (doc) => {
             doc.title = new Text(payload.title);
             doc.collaborators = [];
+            doc.taskIds = [];
         });
 
         listDocRegistry[payload.id] = listDoc;
@@ -33,6 +34,7 @@ export function* rootCreateListSaga() {
                 owner: email,
                 title: listDocRegistry[payload.id].title.toString(),
                 collaborators: listDocRegistry[payload.id].collaborators,
+                taskIds: listDocRegistry[payload.id].taskIds,
             })
         );
     });

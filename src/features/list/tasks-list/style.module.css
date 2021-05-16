@@ -1,0 +1,8 @@
+.root {
+    font-size: 32px;
+    cursor: pointer;
+    padding: 0 12px;
+    margin-left: -12px;
+
+    margin-top: 20px;
+}

@@ -11,6 +11,8 @@ import { addList, pullList } from '../../status/actions';
 import { Title } from '../title/Title';
 import Spin from 'antd/lib/spin';
 import getConfig from 'next/config';
+import { CreateTaskInput } from '../../task/create-task/CreateTaskButton';
+import { TasksList } from '../tasks-list/TasksList';
 
 const { publicRuntimeConfig } = getConfig();
 
@@ -86,6 +88,12 @@ export const ListPage = ({ id, notFound, list }) => {
                     <div className={style.listHeadSettings}>
                         <ListSettings listId={id} />
                     </div>
+                </div>
+                <div>
+                    <div>
+                        <CreateTaskInput listId={id} />
+                    </div>
+                    <TasksList listId={id} />
                 </div>
             </div>
         </MainLayout>

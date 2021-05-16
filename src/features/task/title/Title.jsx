@@ -1,10 +1,11 @@
 import { Input, Tooltip } from 'antd';
 import React, { useState, useRef, useMemo, useLayoutEffect } from 'react';
 import style from './style.module.css';
-import { changeTitle } from './action';
+import { changeTaskTitle } from './action';
 import { connect, useDispatch, useSelector } from 'react-redux';
+import Text from 'antd/lib/typography/Text';
 
-class Title2 extends React.PureComponent {
+class Title extends React.PureComponent {
     constructor(...args) {
         super(...args);
 
@@ -26,8 +27,6 @@ class Title2 extends React.PureComponent {
             const str = this._rawStr.substr(0, this._caretPosition);
             const index = String(this.props.title).indexOf(str) + this._caretPosition;
 
-            console.log(index);
-
             this.refs.input.setSelectionRange(index, index);
         }
     }
@@ -40,8 +39,9 @@ class Title2 extends React.PureComponent {
             return;
         }
 
-        this.props.changeTitle({
-            id: this.props.listId,
+        this.props.changeTaskTitle({
+            id: this.props.id,
+            listId: this.props.listId,
             data: event.nativeEvent.data,
             type: event.nativeEvent.inputType,
             selectionStart: event.target.selectionStart,
@@ -65,8 +65,9 @@ class Title2 extends React.PureComponent {
         const input = event.target;
         this._caretPosition = Number(event.target.selectionEnd);
 
-        this.props.changeTitle({
-            id: this.props.listId,
+        this.props.changeTaskTitle({
+            id: this.props.id,
+            listId: this.props.listId,
             type: 'deleteContentBackward',
             selectionStart: input.selectionStart,
             selectionEnd: input.selectionEnd,
@@ -75,6 +76,7 @@ class Title2 extends React.PureComponent {
 
     render() {
         const { title } = this.props;
+
         return this.state.editing ? (
             <Input
                 value={title}
@@ -83,32 +85,27 @@ class Title2 extends React.PureComponent {
                 onInput={this.handleInput}
                 onKeyDown={this.handleKeyDown}
                 onBlur={this.endEditing}
-                onPressEnter={() => {
-                    setTimeout(
-                        () => this.props.changeTitle({ id: this.props.listId, force: true }),
-                        200
-                    );
-                    this.endEditing();
-                }}
+                onPressEnter={this.endEditing}
             />
         ) : (
-            <Tooltip title={'Click to edit'}>
-                <h2 className={style.title} onClick={this.startEditing}>
+            <Tooltip title={'Click to edit title'}>
+                <Text className={style.title} onClick={this.startEditing}>
                     {title}
-                </h2>
+                </Text>
             </Tooltip>
         );
     }
 }
 
-const mapState = (state, { listId }) => {
+const mapState = (state, { id }) => {
     return {
-        title: state.status.lists[listId]?.title,
+        title: state.status.tasks[id]?.title,
+        listId: state.status.tasks[id]?.listId,
     };
 };
 
 const mapDispatch = {
-    changeTitle,
+    changeTaskTitle,
 };
 
-export const Title = connect(mapState, mapDispatch)(Title2);
+export const TaskTitle = connect(mapState, mapDispatch)(Title);

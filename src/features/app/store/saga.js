@@ -8,6 +8,9 @@ import {
     rootRemoveSaga,
 } from '../../list/invite/saga';
 import { rootChangeTitleSaga } from '../../list/title/saga';
+import { rootTasksListSaga } from '../../task/create-task/saga';
+import { rootChangeTaskTitleSaga } from '../../task/title/saga';
+import { rootChangeTaskDoneSaga } from '../../task/task-item/saga';
 
 function* rootSaga() {
     yield all([
@@ -18,6 +21,9 @@ function* rootSaga() {
         fork(rootExitSaga),
         fork(rootChangeTitleSaga),
         fork(rootRemoveListSaga),
+        fork(rootTasksListSaga),
+        fork(rootChangeTaskTitleSaga),
+        fork(rootChangeTaskDoneSaga),
     ]);
 }
 

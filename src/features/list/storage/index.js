@@ -1,23 +1,8 @@
-import { generateListId } from '../id';
 import { applyChanges, save, init, load } from 'automerge';
 import { redis } from '../../../redis';
 import { jsonToUint8Array } from '../../parsing';
 
-const listStorage = new Map();
-
 const REDIS_KEY = 'lists';
-
-// to remove
-const ListModel = {
-    staticState: {
-        id: 'list:',
-        owner: 'email',
-    },
-    state: {
-        collaborators: [],
-        title: '',
-    },
-};
 
 export const NotFound = new Error('List Not Found');
 export const AlreadyExist = new Error('List Already Exist');
@@ -47,6 +32,14 @@ export async function getListById({ id }) {
     return JSON.parse(value);
 }
 
+export async function getListTaskIds({ id }) {
+    const list = await getListById({ id });
+
+    list.state = load(jsonToUint8Array(list.state));
+
+    return !list ? [] : list.state.taskIds;
+}
+
 export async function removeListById({ id, owner }) {
     const list = await getListById({ id });
     if (!list) {
@@ -59,7 +52,6 @@ export async function removeListById({ id, owner }) {
 
     await redis.hset(REDIS_KEY, id, '');
 }
-
 export async function getListsByUserEmail({ email }) {
     const lists = {};
 
