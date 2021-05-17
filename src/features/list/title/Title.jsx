@@ -28,7 +28,7 @@ class Title2 extends React.PureComponent {
 
             console.log(index);
 
-            this.refs.input.setSelectionRange(index, index);
+            this.refs.input.setSelectionRange(this._caretPosition, this._caretPosition);
         }
     }
 
@@ -53,6 +53,7 @@ class Title2 extends React.PureComponent {
     }
 
     endEditing() {
+        setTimeout(() => this.props.changeTitle({ id: this.props.listId, force: true }), 1000);
         this.setState({ editing: false });
     }
 
@@ -83,13 +84,7 @@ class Title2 extends React.PureComponent {
                 onInput={this.handleInput}
                 onKeyDown={this.handleKeyDown}
                 onBlur={this.endEditing}
-                onPressEnter={() => {
-                    setTimeout(
-                        () => this.props.changeTitle({ id: this.props.listId, force: true }),
-                        200
-                    );
-                    this.endEditing();
-                }}
+                onPressEnter={this.endEditing}
             />
         ) : (
             <Tooltip title={'Click to edit'}>

@@ -16,7 +16,6 @@ export function jsonToUint8Array(json) {
 export function jsonArrayToUint8Array(json) {
     const array = JSON.parse(json);
 
-    console.log(array);
     return array.map((object) => jsonToUint8Array(object));
 }
 

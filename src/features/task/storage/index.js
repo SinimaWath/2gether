@@ -39,17 +39,20 @@ export async function getTaskById({ id }) {
     return JSON.parse(value);
 }
 
-export async function removeTaskById({ id, owner }) {
-    const list = await getTaskById({ id });
+export async function removeTaskById({ id }) {
+    console.log(id);
+
+    await redis.hdel(REDIS_KEY, id, '');
+}
+
+export async function getTaskIdsByListId({ listId }) {
+    const list = await getListById({ id: listId });
     if (!list) {
-        return;
+        throw ListNotFound;
     }
 
-    if (list.staticState.owner !== owner) {
-        return;
-    }
-
-    await redis.hset(REDIS_KEY, id, '');
+    list.state = load(jsonToUint8Array(list.state));
+    return list.state.taskIds;
 }
 
 export async function getTasksByListId({ email, listId }) {
@@ -58,18 +61,20 @@ export async function getTasksByListId({ email, listId }) {
         throw ListNotFound;
     }
 
+    list.state = load(jsonToUint8Array(list.state));
     if (!isUserCanEditList({ email, list })) {
         throw ForbiddenToList;
     }
 
-    const tasksToGet = list.tasksIds;
+    const tasksToGet = list.state.taskIds;
     if (!tasksToGet || !tasksToGet.length) {
         return [];
     }
 
-    const tasks = redis.hmget(REDIS_KEY, tasksToGet);
+    const tasks = await redis.hmget(REDIS_KEY, tasksToGet);
 
-    const tasksToReturn = [];
+    console.log(tasks);
+    const tasksToReturn = {};
     tasks.forEach((taskRaw) => {
         if (!taskRaw) {
             return;
@@ -77,7 +82,7 @@ export async function getTasksByListId({ email, listId }) {
 
         const task = JSON.parse(taskRaw);
 
-        tasksToReturn.push(task);
+        tasksToReturn[task.staticState.id] = task;
     });
 
     return tasksToReturn;

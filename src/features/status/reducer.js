@@ -32,8 +32,16 @@ export const reducer = (state = initialState, action) => {
                 },
             };
         }
+        case STATUS_ACTIONS.ADD_TASKS: {
+            return {
+                ...state,
+                tasks: {
+                    ...state.tasks,
+                    ...action.payload.tasks,
+                },
+            };
+        }
         case STATUS_ACTIONS.ADD_TASK: {
-            console.log(action.payload.id, action.payload.listId);
             const staten = {
                 ...state,
                 tasks: {
@@ -50,8 +58,28 @@ export const reducer = (state = initialState, action) => {
                     },
                 },
             };
-            console.log(staten.tasks);
             return staten;
+        }
+        case STATUS_ACTIONS.REMOVE_TASK: {
+            const copy = {
+                ...state,
+                lists: {
+                    ...state.lists,
+                    [action.payload.listId]: {
+                        ...state.lists[action.payload.listId],
+                        taskIds: state.lists[action.payload.listId].taskIds.filter(
+                            (v) => v !== action.payload.id
+                        ),
+                    },
+                },
+                tasks: {
+                    ...state.tasks,
+                },
+            };
+
+            delete copy.tasks[action.payload.id];
+
+            return copy;
         }
         case STATUS_ACTIONS.REMOVE_LIST: {
             const copy = {
@@ -78,7 +106,11 @@ export const reducer = (state = initialState, action) => {
             };
         }
         case STATUS_ACTIONS.CHANGE_LIST_TITLE: {
-            return {
+            if (!state.lists[action.payload.id]) {
+                return state;
+            }
+
+            const st = {
                 ...state,
                 lists: {
                     ...state.lists,
@@ -88,9 +120,19 @@ export const reducer = (state = initialState, action) => {
                     },
                 },
             };
+
+            if (action.payload.taskIds) {
+                st.lists[action.payload.id].taskIds = action.payload.taskIds;
+            }
+
+            if (action.payload.collaborators) {
+                st.lists[action.payload.id].collaborators = action.payload.collaborators;
+            }
+
+            return st;
         }
         case STATUS_ACTIONS.CHANGE_TASK_TITLE: {
-            return {
+            const st = {
                 ...state,
                 tasks: {
                     ...state.tasks,
@@ -100,6 +142,12 @@ export const reducer = (state = initialState, action) => {
                     },
                 },
             };
+
+            if (typeof action.payload.done === 'boolean') {
+                st.tasks[action.payload.id].done = action.payload.done;
+            }
+
+            return st;
         }
         case STATUS_ACTIONS.CHANGE_TASK_DONE: {
             return {

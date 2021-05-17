@@ -7,7 +7,7 @@ import { CreateListButton } from '../create-list/CreateListButton';
 import { ListSettings } from '../list-settings/ListSettings';
 import Text from 'antd/lib/typography/Text';
 import { useSession } from 'next-auth/client';
-import { addList, pullList } from '../../status/actions';
+import { addList, addTasks, pullList } from '../../status/actions';
 import { Title } from '../title/Title';
 import Spin from 'antd/lib/spin';
 import getConfig from 'next/config';
@@ -17,7 +17,7 @@ import { TasksList } from '../tasks-list/TasksList';
 const { publicRuntimeConfig } = getConfig();
 
 console.log(publicRuntimeConfig);
-export const ListPage = ({ id, notFound, list }) => {
+export const ListPage = ({ id, notFound, list, tasks }) => {
     const listOwner = useSelector((state) => state.status.lists[id]?.owner);
     const listCollabs = useSelector((state) => state.status.lists[id]?.collaborators);
 
@@ -45,6 +45,7 @@ export const ListPage = ({ id, notFound, list }) => {
             return;
         }
 
+        dispatch(addTasks({ tasks }));
         dispatch(addList(list));
     }, []);
 

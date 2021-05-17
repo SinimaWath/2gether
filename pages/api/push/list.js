@@ -2,6 +2,7 @@ import { getSession } from 'next-auth/client';
 import { createList, getListById, updateListStateById } from '../../../src/features/list/storage';
 import { jsonArrayToUint8Array, jsonToUint8Array } from '../../../src/features/parsing';
 import { listChangesQueue } from '../../../src/features/list/queue';
+import { load } from 'automerge';
 
 export default async function handler(req, res) {
     const session = await getSession({ req });
@@ -32,14 +33,14 @@ export default async function handler(req, res) {
         by: session.user.email,
     };
 
-    // to backup and first load
-    await updateListStateById({
-        id: listId,
-        changes: jsonArrayToUint8Array(changes),
-        owner: session.user.email,
-    });
-
-    await listChangesQueue.push(task);
+    await Promise.all([
+        listChangesQueue.push(task),
+        updateListStateById({
+            id: listId,
+            changes: jsonArrayToUint8Array(changes),
+            owner: session.user.email,
+        }),
+    ]);
 
     res.status(200).json({ needPull: false });
 }

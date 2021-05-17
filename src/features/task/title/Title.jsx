@@ -27,7 +27,7 @@ class Title extends React.PureComponent {
             const str = this._rawStr.substr(0, this._caretPosition);
             const index = String(this.props.title).indexOf(str) + this._caretPosition;
 
-            this.refs.input.setSelectionRange(index, index);
+            this.refs.input.setSelectionRange(this._caretPosition, this._caretPosition);
         }
     }
 
@@ -53,6 +53,16 @@ class Title extends React.PureComponent {
     }
 
     endEditing() {
+        setTimeout(
+            () =>
+                this.props.changeTaskTitle({
+                    id: this.props.id,
+                    listId: this.props.listId,
+                    force: true,
+                }),
+            1000
+        );
+
         this.setState({ editing: false });
     }
 

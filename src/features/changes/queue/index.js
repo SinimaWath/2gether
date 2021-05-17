@@ -5,56 +5,57 @@ export class ChangesQueue {
         this.scopeName = scopeName;
     }
 
-    async _setToRedis(id, data) {
-        await redis.hset(this.scopeName, id, JSON.stringify(data));
+    async _setToRedis(channel, array) {
+        await redis.lpush(channel, ...array);
     }
 
-    async _getByIdFromRedis(id) {
-        const queue = await redis.hget(this.scopeName, id);
+    async _getByIdFromRedis(channelId) {
+        const queue = await redis.lrange(channelId, 0, -1);
         if (!queue) {
             return null;
         }
 
-        return JSON.parse(queue);
-    }
-
-    checkNotUserChanges(pushModel) {
-        const queue = this.queueById[pushModel.id];
-        if (!queue) {
-            return true;
-        }
-
-        return queue.find((pushTask) => pushTask.by !== pushModel.by);
+        return queue;
     }
 
     async push(pushModel) {
-        const queue = await this._getByIdFromRedis(pushModel.id);
-        console.log(queue);
-        if (!queue) {
-            await this._setToRedis(pushModel.id, [pushModel]);
-            return;
-        }
+        const channels = await this._getPushAllChannels(pushModel);
+        await Promise.all(
+            channels.map((channel) => this._setToRedis(channel, [JSON.stringify(pushModel)]))
+        );
+    }
 
-        queue.push(pushModel);
-        await this._setToRedis(pushModel.id, queue);
+    async _getPushAllChannels(pushModel, by) {
+        const keys = await redis.keys(this.scopeName + '*');
+
+        return keys.filter((key) => key.includes(pushModel.id) && !key.includes(by));
     }
 
     async pull(pushModel) {
-        let queue = await this._getByIdFromRedis(pushModel.id);
+        let queue = await this._getByIdFromRedis(
+            `${this.scopeName}/${pushModel.id}/${pushModel.by}`
+        );
 
-        if (!queue) {
+        if (!queue || !queue.length) {
+            await this._setToRedis(`${this.scopeName}/${pushModel.id}/${pushModel.by}`, ['']);
             return [];
         }
 
-        const changes = queue
-            .filter((push) => push.by !== pushModel.by)
-            .map(({ changes }) => changes);
-        console.log(changes);
+        const changes = [];
+        for (const value of queue) {
+            if (!value) {
+                continue;
+            }
 
-        const filteredQueue = queue.filter((push) => push.by === pushModel.by);
+            changes.push(JSON.parse(value).changes);
+        }
 
-        await this._setToRedis(pushModel.id, filteredQueue);
+        if (!changes.length) {
+            return [];
+        }
 
+        await redis.del([`${this.scopeName}/${pushModel.id}/${pushModel.by}`]);
+        await this._setToRedis(`${this.scopeName}/${pushModel.id}/${pushModel.by}`, ['']);
         return changes;
     }
 }

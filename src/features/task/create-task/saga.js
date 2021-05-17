@@ -18,6 +18,7 @@ export function* rootTasksListSaga() {
 
             const taskDoc = change(emptyDoc, (doc) => {
                 doc.title = new Text(title);
+                doc.done = false;
             });
 
             taskDocRegistry[id] = taskDoc;
@@ -25,7 +26,6 @@ export function* rootTasksListSaga() {
 
             listDocRegistry[listId] = change(listDocRegistry[listId], (doc) => {
                 doc.taskIds.push(id);
-                doc.done = false;
             });
 
             const initChanges = getChanges(emptyDoc, taskDoc);

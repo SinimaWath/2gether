@@ -28,33 +28,35 @@ export function* rootChangeTitleSaga() {
                 prevDocId = id;
             }
 
-            listDocRegistry[id] = change(listDocRegistry[id], (doc) => {
-                switch (type) {
-                    case 'insertText': {
-                        doc.title.insertAt(selectionStart - 1, data);
-                        break;
-                    }
-                    case 'deleteContentBackward': {
-                        if (selectionStart === selectionEnd && selectionStart === 0) {
+            if (type) {
+                listDocRegistry[id] = change(listDocRegistry[id], (doc) => {
+                    switch (type) {
+                        case 'insertText': {
+                            doc.title.insertAt(selectionStart - 1, data);
                             break;
                         }
+                        case 'deleteContentBackward': {
+                            if (selectionStart === selectionEnd && selectionStart === 0) {
+                                break;
+                            }
 
-                        if (selectionStart === selectionEnd) {
-                            doc.title.deleteAt(selectionStart - 1, 1);
+                            if (selectionStart === selectionEnd) {
+                                doc.title.deleteAt(selectionStart - 1, 1);
+                                break;
+                            }
+
+                            doc.title.deleteAt(selectionStart, selectionEnd - selectionStart);
                             break;
                         }
-
-                        doc.title.deleteAt(selectionStart, selectionEnd - selectionStart);
-                        break;
                     }
-                }
-            });
+                });
+            }
 
             const changes = getChanges(prevDoc, listDocRegistry[id]);
 
+            console.log('changeListTitle', id);
             yield put(changeListTitle({ id, title: listDocRegistry[id].title.toString() }));
 
-            console.log(performance.now() - lastFireTime);
             if (changes.length < 5 && performance.now() - lastFireTime < 2000 && !force) {
                 return;
             }

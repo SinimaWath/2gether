@@ -16,7 +16,7 @@ export function* rootChangeTaskTitleSaga() {
 
     yield takeEvery(
         TASK_TITLE_ACTIONS.CHANGE,
-        function* ({ payload: { id, listId, data, type, selectionStart, selectionEnd } }) {
+        function* ({ payload: { id, listId, data, type, selectionStart, selectionEnd, force } }) {
             if (prevDocId !== id) {
                 prevDoc = taskDocRegistry[id];
                 prevDocId = id;
@@ -27,34 +27,37 @@ export function* rootChangeTaskTitleSaga() {
                 prevDocId = id;
             }
 
-            taskDocRegistry[id] = change(taskDocRegistry[id], (doc) => {
-                switch (type) {
-                    case 'insertText': {
-                        doc.title.insertAt(selectionStart - 1, data);
-                        break;
-                    }
-                    case 'deleteContentBackward': {
-                        if (selectionStart === selectionEnd && selectionStart === 0) {
+            if (type) {
+                taskDocRegistry[id] = change(taskDocRegistry[id], (doc) => {
+                    switch (type) {
+                        case 'insertText': {
+                            doc.title.insertAt(selectionStart - 1, data);
                             break;
                         }
+                        case 'deleteContentBackward': {
+                            if (selectionStart === selectionEnd && selectionStart === 0) {
+                                break;
+                            }
 
-                        if (selectionStart === selectionEnd) {
-                            doc.title.deleteAt(selectionStart - 1, 1);
+                            if (selectionStart === selectionEnd) {
+                                doc.title.deleteAt(selectionStart - 1, 1);
+                                break;
+                            }
+
+                            doc.title.deleteAt(selectionStart, selectionEnd - selectionStart);
                             break;
                         }
-
-                        doc.title.deleteAt(selectionStart, selectionEnd - selectionStart);
-                        break;
                     }
-                }
-            });
+                });
+            }
 
+            console.log('prevDic', id, prevDoc, taskDocRegistry[id], taskDocRegistry);
             const changes = getChanges(prevDoc, taskDocRegistry[id]);
 
             yield put(changeTaskStatusTitle({ id, title: taskDocRegistry[id].title.toString() }));
 
             console.log(performance.now() - lastFireTime);
-            if (changes.length < 5 && performance.now() - lastFireTime < 2000) {
+            if (changes.length < 5 && performance.now() - lastFireTime < 2000 && !force) {
                 return;
             }
 

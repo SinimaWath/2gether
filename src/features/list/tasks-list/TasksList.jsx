@@ -7,7 +7,7 @@ import style from './style.module.css';
 const selectTasksByListId = (lists, tasks, listId) => {
     const tasksIds = lists[listId]?.taskIds || [];
 
-    return tasksIds.map((taskId) => tasks[taskId]);
+    return tasksIds.filter((taskId) => !!tasks[taskId]).map((taskId) => tasks[taskId]);
 };
 
 export const TasksList = ({ listId }) => {

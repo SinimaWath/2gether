@@ -8,8 +8,12 @@ import {
     changeTaskStatusDone,
     changeTaskStatusTitle,
     fetchStatus,
+    removeList,
+    removeTask,
 } from '../../status/actions';
-import { TASK_ITEM_ACIONS } from './action';
+import { deleteTask, TASK_ITEM_ACIONS } from './action';
+import { listDocRegistry } from '../../list/document';
+import { pushListChanges } from '../../list/document/push';
 
 export function* rootChangeTaskDoneSaga() {
     yield throttle(
@@ -33,4 +37,23 @@ export function* rootChangeTaskDoneSaga() {
             }
         }
     );
+}
+
+export function* rootDeleteTaskSaga() {
+    yield takeEvery(TASK_ITEM_ACIONS.DELETE_TASK, function* ({ payload: { id, listId } }) {
+        yield fetch(`/api/push/remove-task?taskId=${id}`);
+
+        const prevListDoc = listDocRegistry[listId];
+
+        listDocRegistry[listId] = change(listDocRegistry[listId], (doc) => {
+            const index = doc.taskIds.findIndex((v) => v === id);
+            doc.taskIds.splice(index, 1);
+        });
+
+        delete taskDocRegistry[id];
+
+        yield put(removeTask({ id, listId }));
+
+        yield pushListChanges(listId, getChanges(prevListDoc, listDocRegistry[listId]));
+    });
 }

@@ -1,4 +1,4 @@
-import { applyChanges, save, init, load } from 'automerge';
+import { applyChanges, save, init, load, decodeChange } from 'automerge';
 import { redis } from '../../../redis';
 import { jsonToUint8Array } from '../../parsing';
 
@@ -96,11 +96,10 @@ export async function updateListStateById({ id, changes, owner }) {
         throw InvalidChangesType;
     }
 
-    console.log(list.state.title.toString());
+    changes.forEach((c) => console.log(decodeChange(c).ops));
 
     list.state = applyChanges(listState, changes)[0];
-
-    console.log(list.state.title.toString());
+    const loadedState = list.state;
 
     list.state = save(list.state);
     await redis.hset(REDIS_KEY, id, JSON.stringify(list));

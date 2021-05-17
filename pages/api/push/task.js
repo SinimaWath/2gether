@@ -14,7 +14,6 @@ export default async function handler(req, res) {
     const { id, listId, changes } = req.body;
 
     const task = await getTaskById({ id });
-    console.log(id, listId, changes, task);
 
     if (!task) {
         await createTask({
@@ -27,23 +26,21 @@ export default async function handler(req, res) {
         return;
     }
 
-    // const task = {
-    //     id: taskId,
-    //     changes,
-    //     by: session.user.email,
-    // };
-    //
-    // taskChangesQueue.push(task);
-
-    // to backup and first load
-    await updateTaskStateById({
+    const taskModel = {
         id,
-        listId,
-        changes: jsonArrayToUint8Array(changes),
-        owner: session.user.email,
-    });
+        changes,
+        by: session.user.email,
+    };
 
-    // const thereOtherChanges = taskChangesQueue.checkNotUserChanges(task);
+    await Promise.all([
+        taskChangesQueue.push(taskModel),
+        updateTaskStateById({
+            id,
+            listId,
+            changes: jsonArrayToUint8Array(changes),
+            owner: session.user.email,
+        }),
+    ]);
 
     res.status(200).json();
 }
