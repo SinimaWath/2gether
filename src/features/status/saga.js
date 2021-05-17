@@ -1,4 +1,4 @@
-import { put, all, fork, takeEvery } from 'redux-saga/effects';
+import { put, all, fork, takeEvery, select } from 'redux-saga/effects';
 
 import { jsonArrayToUint8Array, jsonToUint8Array } from '../parsing';
 import { load } from 'automerge';
@@ -59,7 +59,6 @@ export function* fetchStatusSaga() {
 
             taskDocRegistry[id] = load(uintDoc);
 
-            console.log(id, taskDocRegistry);
             tasksForState[id] = {
                 id,
                 owner: task.staticState.owner,
@@ -137,6 +136,31 @@ function* pullList() {
     });
 }
 
+function* pullTasks() {
+    yield takeEvery(STATUS_ACTIONS.PULL_TASKS, function* ({ payload: { listId } }) {
+        const resp = yield fetch(`/api/pull/tasks?id=${listId}`);
+        const { tasks } = yield resp.json();
+
+        const tasksState = yield select((state) => state.status.tasks);
+
+        const tasksForState = {};
+        Object.entries(tasks).forEach(([id, task]) => {
+            if (!tasksState[id]) {
+                const state = load(jsonToUint8Array(task.state));
+
+                tasksForState[id] = {
+                    ...task.staticState,
+                    done: state.done,
+                    title: state.title.toString(),
+                };
+            }
+        });
+
+        yield put(setStatus({ tasks: tasksForState }));
+        console.log(tasks);
+    });
+}
+
 export function* rootStatusSaga() {
-    yield all([fork(fetchStatusSaga), fork(pullList)]);
+    yield all([fork(fetchStatusSaga), fork(pullList), fork(pullTasks)]);
 }

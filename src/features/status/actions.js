@@ -2,6 +2,7 @@ export const STATUS_ACTIONS = {
     SET_STATUS: 'STATUS_ACTIONS/SET_STATUS',
     FETCH_STATUS: 'STATUS_ACTIONS/FETCH_STATUS',
     PULL_LIST: 'STATUS_ACTIONS/PULL_LIST',
+    PULL_TASKS: 'STATUS_ACTIONS/PULL_TASKS',
     ADD_LIST: 'STATUS_ACTIONS/ADD_LIST',
     ADD_TASK: 'STATUS_ACTIONS/ADD_TASK',
     ADD_TASKS: 'STATUS_ACTIONS/ADD_TASKS',
@@ -21,6 +22,7 @@ export const changeListTitle = (payload) => ({ type: STATUS_ACTIONS.CHANGE_LIST_
 export const removeList = (payload) => ({ type: STATUS_ACTIONS.REMOVE_LIST, payload });
 export const removeTask = (payload) => ({ type: STATUS_ACTIONS.REMOVE_TASK, payload });
 export const pullList = (payload) => ({ type: STATUS_ACTIONS.PULL_LIST, payload });
+export const pullTasks = (payload) => ({ type: STATUS_ACTIONS.PULL_TASKS, payload });
 export const addListCollabs = (payload) => ({ type: STATUS_ACTIONS.ADD_LIST_COLLABS, payload });
 export const addTask = (payload) => ({ type: STATUS_ACTIONS.ADD_TASK, payload });
 export const changeTaskStatusTitle = (payload) => ({

@@ -9,11 +9,8 @@ import { DeleteOutlined } from '@ant-design/icons';
 import Tooltip from 'antd/lib/tooltip';
 export const TaskItem = ({ id }) => {
     const task = useSelector((state) => {
-        console.log(state.status.tasks);
-
         return state.status.tasks[id];
     });
-    console.log(task);
     const dispatch = useDispatch();
     if (!task) {
         return null;

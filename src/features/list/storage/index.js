@@ -96,11 +96,8 @@ export async function updateListStateById({ id, changes, owner }) {
         throw InvalidChangesType;
     }
 
-    changes.forEach((c) => console.log(decodeChange(c).ops));
-
     list.state = applyChanges(listState, changes)[0];
-    const loadedState = list.state;
-
     list.state = save(list.state);
+
     await redis.hset(REDIS_KEY, id, JSON.stringify(list));
 }

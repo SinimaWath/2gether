@@ -7,7 +7,7 @@ import { CreateListButton } from '../create-list/CreateListButton';
 import { ListSettings } from '../list-settings/ListSettings';
 import Text from 'antd/lib/typography/Text';
 import { useSession } from 'next-auth/client';
-import { addList, addTasks, pullList } from '../../status/actions';
+import { addList, addTasks, pullList, pullTasks } from '../../status/actions';
 import { Title } from '../title/Title';
 import Spin from 'antd/lib/spin';
 import getConfig from 'next/config';
@@ -24,6 +24,7 @@ export const ListPage = ({ id, notFound, list, tasks }) => {
     const dispatch = useDispatch();
     const [session, loading] = useSession();
     const intervalRef = useRef();
+    const pullTaskIntervalRef = useRef();
 
     useEffect(() => {
         if (!intervalRef.current && id) {
@@ -33,9 +34,20 @@ export const ListPage = ({ id, notFound, list, tasks }) => {
             );
         }
 
+        if (!pullTaskIntervalRef.current && id) {
+            pullTaskIntervalRef.current = setInterval(
+                () => dispatch(pullTasks({ listId: id })),
+                publicRuntimeConfig.listSyncInterval * 1.5
+            );
+        }
+
         return () => {
             if (intervalRef.current) {
                 clearInterval(intervalRef.current);
+            }
+
+            if (pullTaskIntervalRef.current) {
+                clearInterval(pullTaskIntervalRef.current);
             }
         };
     }, [id, notFound, list]);

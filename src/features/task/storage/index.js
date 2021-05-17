@@ -40,8 +40,6 @@ export async function getTaskById({ id }) {
 }
 
 export async function removeTaskById({ id }) {
-    console.log(id);
-
     await redis.hdel(REDIS_KEY, id, '');
 }
 
@@ -73,7 +71,6 @@ export async function getTasksByListId({ email, listId }) {
 
     const tasks = await redis.hmget(REDIS_KEY, tasksToGet);
 
-    console.log(tasks);
     const tasksToReturn = {};
     tasks.forEach((taskRaw) => {
         if (!taskRaw) {
