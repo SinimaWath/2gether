@@ -37,7 +37,7 @@ export const ListPage = ({ id, notFound, list, tasks }) => {
         if (!pullTaskIntervalRef.current && id) {
             pullTaskIntervalRef.current = setInterval(
                 () => dispatch(pullTasks({ listId: id })),
-                publicRuntimeConfig.listSyncInterval * 1.5
+                publicRuntimeConfig.listSyncInterval * 3
             );
         }
 

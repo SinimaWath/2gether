@@ -31,29 +31,24 @@ export function* rootTasksListSaga() {
             const initChanges = getChanges(emptyDoc, taskDoc);
             const listChanges = getChanges(prevListDoc, listDocRegistry[listId]);
 
-            const tasksPush = yield fetch('/api/push/task', {
-                method: 'POST',
-                body: JSON.stringify({ id, listId, changes: JSON.stringify(initChanges) }),
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
+            const [tasksPush, listPush] = yield all([
+                yield fetch('/api/push/task', {
+                    method: 'POST',
+                    body: JSON.stringify({ id, listId, changes: JSON.stringify(initChanges) }),
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                }),
+                yield fetch('/api/push/list', {
+                    method: 'POST',
+                    body: JSON.stringify({ listId, changes: JSON.stringify(listChanges) }),
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                }),
+            ]);
 
-            if (tasksPush.status !== 200) {
-                message.error('Unexpected errors');
-                yield put(fetchStatus());
-                return;
-            }
-
-            const listPush = yield fetch('/api/push/list', {
-                method: 'POST',
-                body: JSON.stringify({ listId, changes: JSON.stringify(listChanges) }),
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            if (listPush.status !== 200) {
+            if (tasksPush.status !== 200 || listPush.status !== 200) {
                 message.error('Unexpected errors');
                 yield put(fetchStatus());
                 return;

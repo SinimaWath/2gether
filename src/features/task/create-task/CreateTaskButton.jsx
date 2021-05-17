@@ -7,7 +7,10 @@ import Search from 'antd/lib/input/Search';
 export const CreateTaskInput = ({ listId }) => {
     const dispatch = useDispatch();
 
-    const handleCreate = (value, event) => {
+    const handleCreate = (value) => {
+        if (!value) {
+            return;
+        }
         dispatch(createTask({ title: value, id: generateTaskId(), listId }));
     };
 
