@@ -103,7 +103,8 @@ function* pullList() {
                             continue;
                         }
 
-                        const changesAutomerge = jsonArrayToUint8Array(changes);
+                        console.log(changes);
+                        const changesAutomerge = jsonArrayToUint8Array(change);
                         taskDocRegistry[id] = applyChanges(
                             taskDocRegistry[id],
                             changesAutomerge
@@ -121,7 +122,6 @@ function* pullList() {
                 }
             }
 
-            console.log('changeListTitle', listId);
             yield put(
                 changeListTitle({
                     id: listId,
@@ -145,6 +145,10 @@ function* pullTasks() {
 
         const tasksForState = {};
         Object.entries(tasks).forEach(([id, task]) => {
+            if (!taskDocRegistry[id]) {
+                taskDocRegistry[id] = load(jsonToUint8Array(task.state));
+            }
+
             if (!tasksState[id]) {
                 const state = load(jsonToUint8Array(task.state));
 
@@ -157,7 +161,6 @@ function* pullTasks() {
         });
 
         yield put(setStatus({ tasks: tasksForState }));
-        console.log(tasks);
     });
 }
 

@@ -1,3 +1,3 @@
 export const taskDocRegistry = {};
 
-// globalThis.taskDocRegistry = taskDocRegistry;
+globalThis.taskDocRegistry = taskDocRegistry;
